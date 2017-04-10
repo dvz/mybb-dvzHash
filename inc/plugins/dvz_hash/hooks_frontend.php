@@ -25,7 +25,13 @@ function create_password(array &$parameters)
     }
 
     if ($algorithm != 'default') {
-        $parameters['fields'] = \dvzHash\hash($algorithm, $parameters['password']);
+        $fields = [
+            'salt' => \generate_salt(),
+        ];
+
+        $algorithmFields = \dvzHash\hash($algorithm, $parameters['password']);
+
+        $parameters['fields'] = array_merge($fields, $algorithmFields);
     }
 }
 
@@ -46,15 +52,15 @@ function verify_user_password(array &$parameters)
 function datahandler_user_insert(\UserDataHandler $UserDataHandler)
 {
     if (isset($UserDataHandler->data['password_algorithm'])) {
-        $UserDataHandler->user_update_data['password_algorithm'] = $UserDataHandler->data['password_algorithm'];
+        $UserDataHandler->user_insert_data['password_algorithm'] = $UserDataHandler->data['password_algorithm'];
     }
 
     if (isset($UserDataHandler->data['password_encryption'])) {
-        $UserDataHandler->user_update_data['password_encryption'] = (int)$UserDataHandler->data['password_encryption'];
+        $UserDataHandler->user_insert_data['password_encryption'] = (int)$UserDataHandler->data['password_encryption'];
     }
 
     if (isset($UserDataHandler->data['password'])) {
-        $UserDataHandler->user_update_data['password_downgraded'] = '';
+        $UserDataHandler->user_insert_data['password_downgraded'] = '';
     }
 }
 
