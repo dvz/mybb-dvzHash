@@ -37,8 +37,8 @@ function convertUserPasswordEncryption(int $fromKey, int $toKey, int $limit = nu
     require_once MYBB_ROOT . 'inc/3rdparty/defuse-crypto.phar';
 
     if (
-        !($fromKey === null || \dvzHash\testEncryptionKey($fromKey)) ||
-        !\dvzHash\testEncryptionKey($toKey)
+        !($fromKey === 0 || \dvzHash\testEncryptionKey($fromKey)) ||
+        !($toKey === 0 || \dvzHash\testEncryptionKey($toKey))
     ) {
         return false;
     }
