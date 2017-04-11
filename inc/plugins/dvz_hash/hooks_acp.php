@@ -51,7 +51,7 @@ function admin_load()
             $page->output_header($lang->dvz_hash_admin);
             $page->output_nav_tabs($sub_tabs, 'overview');
 
-            $usedKnownAlgorithms = [];
+            $wrapCandidateAlgorithms = [];
 
             $query = $db->simple_select('users', 'COUNT(uid) AS n, password_algorithm', '', [
                 'group_by' => 'password_algorithm',
@@ -63,11 +63,15 @@ function admin_load()
             $table->construct_header($lang->dvz_hash_admin_algorithm_known, ['width' => '25%', 'class' => 'align_center']);
 
             while ($row = $db->fetch_array($query)) {
-                $name = $row['password_algorithm'] === '' ? $lang->dvz_hash_admin_algorithm_default : htmlspecialchars_uni($row['password_algorithm']);
+                if ($row['password_algorithm'] === '') {
+                    $name = $lang->dvz_hash_admin_algorithm_default;
+                    $wrapCandidateAlgorithms[] = 'default';
+                } else {
+                    $name = htmlspecialchars_uni($row['password_algorithm']);
+                    $wrapCandidateAlgorithms[] = $row['password_algorithm'];
+                }
 
                 if (\dvzHash\isKnownAlgorithm($row['password_algorithm'])) {
-                    $usedKnownAlgorithms[] = $row['password_algorithm'];
-
                     $recognized = $lang->yes;
                 } else {
                     $recognized = $lang->no;
@@ -78,6 +82,7 @@ function admin_load()
                 $table->construct_cell($recognized, ['class' => 'align_center']);
                 $table->construct_row();
             }
+
 
             $table->output($lang->dvz_hash_admin_algorithms_overview);
 
@@ -90,7 +95,7 @@ function admin_load()
             $form_container->output_row_header($lang->dvz_hash_admin_wrap_algorithm_per_page, ['style' => 'width: 30%;']);
             $form_container->output_row_header('&nbsp;', ['style' => 'width: 10%;']);
 
-            $form_container->output_cell($form->generate_select_box('algorithm', array_combine($usedKnownAlgorithms, $usedKnownAlgorithms)));
+            $form_container->output_cell($form->generate_select_box('algorithm', array_combine($wrapCandidateAlgorithms, $wrapCandidateAlgorithms)));
             $form_container->output_cell($form->generate_select_box('to_algorithm', \dvzHash\getAlgorithmSelectArray()));
             $form_container->output_cell($form->generate_numeric_field('per_page', 100, ['style' => 'width: 150px;', 'min' => 0]));
             $form_container->output_cell($form->generate_submit_button($lang->go, ['name' => 'wrap_algorithm']));

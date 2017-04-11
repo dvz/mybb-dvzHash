@@ -8,11 +8,13 @@ abstract class default_bcrypt implements WrappableAlgorithm
     {
         $passwordFields = \dvzHash\createPasswordDefault($plaintext);
 
-        $passwordFields = password_hash($passwordFields['password'], PASSWORD_BCRYPT, [
+        $hash = password_hash($passwordFields['password'], PASSWORD_BCRYPT, [
             'cost' => (int)\dvzHash\getSettingValue('bcrypt_cost'),
         ]);
 
-        return $passwordFields;
+        return array_merge($passwordFields, [
+            'password' => $hash,
+        ]);
     }
 
     public static function verify(string $plaintext, array $passwordFields): bool
@@ -21,7 +23,7 @@ abstract class default_bcrypt implements WrappableAlgorithm
             'password_algorithm_force' => 'default',
         ]);
 
-        return password_verify($stringPrehashed, $passwordFields['password']);
+        return password_verify($stringPrehashed['password'], $passwordFields['password']);
     }
 
     public static function needsRehash(array $passwordFields): bool
@@ -36,10 +38,12 @@ abstract class default_bcrypt implements WrappableAlgorithm
 
     public static function wrap(array $passwordFields): array
     {
-        $passwordFields = password_hash($passwordFields['password'], PASSWORD_BCRYPT, [
+        $hash = password_hash($passwordFields['password'], PASSWORD_BCRYPT, [
             'cost' => (int)\dvzHash\getSettingValue('bcrypt_cost'),
         ]);
 
-        return $passwordFields;
+        return [
+            'password' => $hash,
+        ];
     }
 }

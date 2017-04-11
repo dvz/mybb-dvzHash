@@ -36,6 +36,8 @@ function wrapAlgorithm(string $toAlgorithm, array $passwordFields): array
 
         $passwordFields = $class::wrap($passwordFields);
 
+        $passwordFields['password_algorithm'] = $toAlgorithm;
+
         $passwordFields = \dvzHash\wrapPasswordFields($passwordFields);
 
         return $passwordFields;
@@ -104,6 +106,12 @@ function wrapUserPasswordAlgorithm(string $fromAlgorithm, string $toAlgorithm, i
         return false;
     }
 
+    if ($fromAlgorithm == 'default') {
+        $algorithmId = '';
+    } else {
+        $algorithmId = $fromAlgorithm;
+    }
+
     if ($limit) {
         $options = [
             'limit' => abs((int)$limit),
@@ -112,7 +120,7 @@ function wrapUserPasswordAlgorithm(string $fromAlgorithm, string $toAlgorithm, i
         $options = [];
     }
 
-    $query = $db->simple_select('users', 'uid,password,password_encryption', "password_algorithm='" . $db->escape_string($fromAlgorithm) . "' AND password_downgraded=''", $options);
+    $query = $db->simple_select('users', 'uid,password,password_encryption', "password_algorithm='" . $db->escape_string($algorithmId) . "' AND password_downgraded=''", $options);
 
     while ($row = $db->fetch_array($query)) {
         $passwordFields = \dvzHash\wrapAlgorithm($toAlgorithm, $row);
