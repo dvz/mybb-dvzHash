@@ -94,7 +94,7 @@ function dvz_hash_install()
 
 function dvz_hash_uninstall()
 {
-    global $mybb, $lang, $page, $codename;
+    global $mybb, $db, $lang, $page, $codename;
 
     if ($mybb->request_method == 'post') {
         if ($mybb->get_input('no')) {
