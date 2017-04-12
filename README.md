@@ -1,5 +1,9 @@
 # DVZ Hash
 
+While this plugin is considered stable, it is highly recommended that only webmasters familiar with principles of password hashing, encryption (if used) and MyBB's architecture & database structure maintain the plugin on live boards.
+
+View _SECURITY.md_ for a basic advisory on secure usage.
+
 **Requirements:**
 - MyBB >= 1.8.11
 - PHP >= 7.0

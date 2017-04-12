@@ -13,5 +13,10 @@ Webmasters should avoid using hashing algorithms or combinations thereof that ar
 - #### Encryption keys storage
 The plugin needs to be able to access all encryption keys in use. The plugin allows to store them in the _inc/config.php_ file (less secure) and as an environment variable (recommended). Administrators should make sure that these values are not accessible from outside users or software.
 
+ The encryption keys in use should be backed up in a safe location.
+
+- #### Encryption key rotation
+ The plugin allows hashes to be encrypted, decrypted and having their ciphertexts converted between encryption keys. In case of suspicion that some keys may have been accessed by a third party, a new default key should be generated (added at the end of the list / with the highest index) and hashes encrypted with previous keys should be converted to the new one.
+
 - #### Password downgrades
 The _Algorithm downgrades_ feature should only be used as a temporary measure for compatibility reasons. The downgraded passwords should be restored as soon as possible.
