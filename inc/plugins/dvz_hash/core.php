@@ -20,9 +20,21 @@ function verify(string $algorithm, string $plaintext, array $passwordFields): bo
 {
     $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
 
-    $class = '\dvzHash\Algorithms\\' . $algorithm;
+    if ($algorithm == '' || !empty($passwordFields['password_downgraded'])) {
+        $comparePasswordFields = \create_password($plaintext, $passwordFields['salt'], [
+            'password_algorithm_force' => 'default',
+        ]);
 
-    return $class::verify($plaintext, $passwordFields);
+        $result = \my_hash_equals($passwordFields['password'], $comparePasswordFields['password']);
+    } elseif (\dvzHash\isKnownAlgorithm($algorithm)) {
+        $class = '\dvzHash\Algorithms\\' . $algorithm;
+
+        $result = $class::verify($plaintext, $passwordFields);
+    } else {
+        $result = null;
+    }
+
+    return $result;
 }
 
 function wrapAlgorithm(string $toAlgorithm, array $passwordFields): array

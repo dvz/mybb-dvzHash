@@ -37,16 +37,7 @@ function create_password(array &$parameters)
 
 function verify_user_password(array &$parameters)
 {
-    if (isset($parameters['user']['password_algorithm'])) {
-        if ($parameters['user']['password_algorithm'] == '' || !empty($parameters['user']['password_downgraded'])) {
-            $passwordFields = \create_password($parameters['password'], $parameters['user']['salt'], [
-                'password_algorithm_force' => 'default',
-            ]);
-            $parameters['result'] = \my_hash_equals($parameters['user']['password'], $passwordFields['password']);
-        } elseif (\dvzHash\isKnownAlgorithm($parameters['user']['password_algorithm'])) {
-            $parameters['result'] = \dvzHash\verify($parameters['user']['password_algorithm'], $parameters['password'], $parameters['user']);
-        }
-    }
+    $parameters['result'] = \dvzHash\verify($parameters['user']['password_algorithm'], $parameters['password'], $parameters['user']);
 }
 
 function datahandler_user_insert(\UserDataHandler $UserDataHandler)
