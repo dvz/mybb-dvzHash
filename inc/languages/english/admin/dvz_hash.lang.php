@@ -2,7 +2,7 @@
 
 $l['dvz_hash_plugin_description'] = 'Upgrades the password hash algorithm and converts old passwords on the fly.';
 $l['dvz_hash_uninstall_confirm_title'] = 'Confirm uninstallation';
-$l['dvz_hash_uninstall_confirm_message'] = 'Do you want to remove installed password-related fields from the database (this might result in corrupted password information)?';
+$l['dvz_hash_uninstall_confirm_message'] = 'The plugin has been deactivated. Do you want to remove installed password-related fields from the database (this might result in corrupted password information)?';
 
 $l['dvz_hash_admin_active_downgrades'] = '<p><em>DVZ Hash:</em> Administratively downgraded passwords exist and should be restored as soon as possible. <a href="{1}"><strong>Show details &rarr;</strong></a></p>';
 
