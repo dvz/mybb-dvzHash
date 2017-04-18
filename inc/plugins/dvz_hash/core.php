@@ -11,7 +11,11 @@ function hash(string $algorithm, string $plaintext): array
 
     $passwordFields = \dvzHash\wrapPasswordFields($passwordFields);
 
-    $passwordFields['password_algorithm'] = $algorithm;
+    if ($algorithm == 'mybb') {
+        $passwordFields['password_algorithm'] = '';
+    } else {
+        $passwordFields['password_algorithm'] = $algorithm;
+    }
 
     return $passwordFields;
 }
@@ -20,12 +24,12 @@ function verify(string $algorithm, string $plaintext, array $passwordFields): bo
 {
     $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
 
-    if ($algorithm == '' || !empty($passwordFields['password_downgraded'])) {
+    if (!empty($passwordFields['password_downgraded'])) {
         $comparePasswordFields = \create_password($plaintext, $passwordFields['salt'], [
-            'password_algorithm_force' => 'default',
+            'dvz_hash_bypass' => true,
         ]);
 
-        $result = \my_hash_equals($passwordFields['password'], $comparePasswordFields['password']);
+        $result = \my_hash_equals($passwordFields['password_downgraded'], $comparePasswordFields['password']);
     } elseif (\dvzHash\isKnownAlgorithm($algorithm)) {
         $class = '\dvzHash\Algorithms\\' . $algorithm;
 
@@ -35,6 +39,15 @@ function verify(string $algorithm, string $plaintext, array $passwordFields): bo
     }
 
     return $result;
+}
+
+function needsRehash(string $algorithm, array $passwordFields): bool
+{
+    $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
+
+    $class = '\dvzHash\Algorithms\\' . $algorithm;
+
+    return $class::needsRehash($passwordFields);
 }
 
 function wrapAlgorithm(string $toAlgorithm, array $passwordFields): array
@@ -48,7 +61,11 @@ function wrapAlgorithm(string $toAlgorithm, array $passwordFields): array
 
         $passwordFields = $class::wrap($passwordFields);
 
-        $passwordFields['password_algorithm'] = $toAlgorithm;
+        if ($toAlgorithm == 'mybb') {
+            $passwordFields['password_algorithm'] = '';
+        } else {
+            $passwordFields['password_algorithm'] = $toAlgorithm;
+        }
 
         $passwordFields = \dvzHash\wrapPasswordFields($passwordFields);
 
@@ -60,6 +77,7 @@ function wrapPasswordFields(array $passwordFields): array
 {
     if (\dvzHash\encryptionEnabled() && \dvzHash\encryptionKeyAvailable()) {
         $encryptionData = \dvzHash\encrypt($passwordFields['password']);
+
         $passwordFields['password'] = $encryptionData['ciphertext'];
         $passwordFields['password_encryption'] = $encryptionData['key_id'];
     } else {
@@ -82,7 +100,9 @@ function downgradeUserPassword(int $uid, string $plaintext): bool
 {
     global $db;
 
-    $data = \dvzHash\createPasswordDefault($plaintext);
+    $data = \create_password($plaintext, false, [
+        'dvz_hash_bypass' => true,
+    ]);
 
     $db->update_query('users', [
         'password_downgraded' => '`password`',
@@ -118,7 +138,7 @@ function wrapUserPasswordAlgorithm(string $fromAlgorithm, string $toAlgorithm, i
         return false;
     }
 
-    if ($fromAlgorithm == 'default') {
+    if ($fromAlgorithm == 'mybb') {
         $algorithmId = '';
     } else {
         $algorithmId = $fromAlgorithm;
@@ -136,6 +156,7 @@ function wrapUserPasswordAlgorithm(string $fromAlgorithm, string $toAlgorithm, i
 
     while ($row = $db->fetch_array($query)) {
         $passwordFields = \dvzHash\wrapAlgorithm($toAlgorithm, $row);
+
         $db->update_query('users', $passwordFields, 'uid=' . (int)$row['uid']);
     }
 
@@ -174,8 +195,6 @@ function getAlgorithmSelectString(): string
 {
     $algorithms = \dvzHash\getKnownAlgorithms();
 
-    array_unshift($algorithms, 'default');
-
     array_walk($algorithms, function (&$value) {
         $value = $value . '=' . $value;
     });
@@ -187,8 +206,6 @@ function getAlgorithmSelectArray(): array
 {
     $algorithms = \dvzHash\getKnownAlgorithms();
 
-    array_unshift($algorithms, 'default');
-
     return array_combine($algorithms, $algorithms);
 }
 
@@ -199,47 +216,17 @@ function getPreferredAlgorithm(): string
     if (\dvzHash\isKnownAlgorithm($preferredAlgorithm)) {
         return $preferredAlgorithm;
     } else {
-        return 'default';
+        return 'mybb';
     }
 }
 
 function algorithmsWrappable(string $fromAlgorithm, string $toAlgorithm): bool
 {
     return
-        (
-            \dvzHash\isKnownAlgorithm($fromAlgorithm) ||
-            $fromAlgorithm == 'default'
-        ) &&
+        \dvzHash\isKnownAlgorithm($fromAlgorithm) &&
         \dvzHash\isKnownAlgorithm($toAlgorithm) &&
         strpos($toAlgorithm, $fromAlgorithm . '_') === 0
     ;
-}
-
-function needsRehash(string $algorithm, array $passwordFields): bool
-{
-    if ($passwordFields['password_downgraded']) {
-        return false;
-    } else {
-        if ($passwordFields['password_encryption'] !== '0' && \dvzHash\encryptionKeyAvailable()) {
-            $data['password'] = \dvzHash\decrypt($passwordFields['password'], $passwordFields['password_encryption']);
-        }
-
-        $class = '\dvzHash\Algorithms\\' . $algorithm;
-
-        return $class::needsRehash($passwordFields);
-    }
-}
-
-// internal
-function createPasswordDefault(string $string): array
-{
-    require_once MYBB_ROOT . 'inc/functions_user.php';
-
-    $passwordFields = \create_password($string, false, [
-        'password_algorithm_force' => 'default',
-    ]);
-
-    return $passwordFields;
 }
 
 // common

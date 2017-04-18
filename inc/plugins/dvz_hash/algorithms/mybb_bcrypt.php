@@ -2,11 +2,13 @@
 
 namespace dvzHash\Algorithms;
 
-abstract class default_bcrypt implements WrappableAlgorithm
+abstract class mybb_bcrypt implements WrappableAlgorithm
 {
     public static function create(string $plaintext): array
     {
-        $passwordFields = \dvzHash\createPasswordDefault($plaintext);
+        $passwordFields = \create_password($plaintext, false, [
+            'dvz_hash_bypass' => true,
+        ]);
 
         $hash = password_hash($passwordFields['password'], PASSWORD_BCRYPT, [
             'cost' => (int)\dvzHash\getSettingValue('bcrypt_cost'),
@@ -20,7 +22,7 @@ abstract class default_bcrypt implements WrappableAlgorithm
     public static function verify(string $plaintext, array $passwordFields): bool
     {
         $stringPrehashed = \create_password($plaintext, $passwordFields['salt'], [
-            'password_algorithm_force' => 'default',
+            'dvz_hash_bypass' => true,
         ]);
 
         return password_verify($stringPrehashed['password'], $passwordFields['password']);

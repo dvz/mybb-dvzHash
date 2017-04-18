@@ -65,7 +65,7 @@ function admin_load()
             while ($row = $db->fetch_array($query)) {
                 if ($row['password_algorithm'] === '') {
                     $name = $lang->dvz_hash_admin_algorithm_default;
-                    $wrapCandidateAlgorithms[] = 'default';
+                    $wrapCandidateAlgorithms[] = 'mybb';
                 } else {
                     $name = htmlspecialchars_uni($row['password_algorithm']);
                     $wrapCandidateAlgorithms[] = $row['password_algorithm'];
