@@ -22,15 +22,16 @@ function hash(string $algorithm, string $plaintext): array
 
 function verify(string $algorithm, string $plaintext, array $passwordFields): bool
 {
-    $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
 
     if (!empty($passwordFields['password_downgraded'])) {
         $comparePasswordFields = \create_password($plaintext, $passwordFields['salt'], [
             'dvz_hash_bypass' => true,
         ]);
 
-        $result = \my_hash_equals($passwordFields['password_downgraded'], $comparePasswordFields['password']);
+        $result = \my_hash_equals($passwordFields['password'], $comparePasswordFields['password']);
     } elseif (\dvzHash\isKnownAlgorithm($algorithm)) {
+        $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
+
         $class = '\dvzHash\Algorithms\\' . $algorithm;
 
         $result = $class::verify($plaintext, $passwordFields);
@@ -105,7 +106,7 @@ function downgradeUserPassword(int $uid, string $plaintext): bool
     ]);
 
     $db->update_query('users', [
-        'password_downgraded' => '`password`',
+        'password_downgraded' => 'CONCAT(`password`, \':SALT:\', `salt`)',
     ], 'uid=' . (int)$uid, false, true);
 
     if ($db->affected_rows()) {
@@ -121,13 +122,25 @@ function restoreDowngradedUserPassword(int $uid): bool
 {
     global $db;
 
-    $db->update_query('users', [
-        'password' => '`password_downgraded`',
-        'salt' => "'" . $db->escape_string(generate_salt()) . "'",
-        'password_downgraded' => "''",
-    ], 'uid = ' . (int)$uid . " AND password_downgraded != ''", false, true);
+    if ($user = \get_user($uid)) {
+        $values = explode(':SALT:', $user['password_downgraded']);
 
-    return $db->affected_rows() == 1;
+        if (isset($values[1])) {
+            $salt = $values[1];
+        } else {
+            $salt = generate_salt();
+        }
+
+        $db->update_query('users', [
+            'password' => $db->escape_string($values[0]),
+            'salt' => $db->escape_string($salt),
+            'password_downgraded' => '',
+        ], 'uid = ' . (int)$uid . " AND password_downgraded != ''");
+
+        return $db->affected_rows() == 1;
+    } else {
+        return false;
+    }
 }
 
 function wrapUserPasswordAlgorithm(string $fromAlgorithm, string $toAlgorithm, int $limit = null): bool
