@@ -66,7 +66,7 @@ function dvz_hash_info()
         'website'       => 'https://devilshakerz.com',
         'author'        => 'Tomasz \'Devilshakerz\' Mlynski',
         'authorsite'    => 'https://devilshakerz.com',
-        'version'       => '1.0',
+        'version'       => '1.0.1',
         'codename'      => 'dvz_hash',
         'compatibility' => '18*',
     ];

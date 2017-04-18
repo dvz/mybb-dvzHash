@@ -18,7 +18,7 @@ Algorithms can be added by creating a class that implements the `dvzHash\Algorit
 Having access to plaintext password values during login, the plugin can change the hashing algorithm according to the current _Preferred algorithm_ and _Default bcrypt cost_ setting values in the background.
 
 #### Algorithm wrapping
-It is possible to increase the hash strength of existing hashes without providing plaintext values. The plugin includes the `default_bcrypt` algorithm that creates and verifies passwords by using both the MyBB's default algorithm and _bcrypt_.
+It is possible to increase the hash strength of existing hashes without providing plaintext values. The plugin includes the `mybb_bcrypt` algorithm that creates and verifies passwords by using both the MyBB's default algorithm and _bcrypt_.
 
 #### Algorithm downgrades
 
