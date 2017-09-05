@@ -6,16 +6,28 @@ abstract class mybb implements Algorithm
 {
     public static function create(string $plaintext): array
     {
-        return \create_password($plaintext, false, [
-            'dvz_hash_bypass' => true,
-        ]);
+        return self::createWithParameters($plaintext);
+    }
+
+    public static function createWithParameters(string $plaintext, string $salt = null): array
+    {
+        if ($salt === null) {
+            $salt = \generate_salt();
+        }
+
+        $hash = md5(md5($salt) . md5($plaintext));
+
+        return [
+            'salt' => $salt,
+            'password' => $hash,
+        ];
     }
 
     public static function verify(string $plaintext, array $passwordFields): bool
     {
-        return \verify_user_password(array_merge($passwordFields, [
-            'dvz_hash_bypass' => true,
-        ]), $plaintext);
+        $mirrorHash = self::createWithParameters($plaintext, $passwordFields['salt']);
+
+        return \my_hash_equals($passwordFields['password'], $mirrorHash);
     }
 
     public static function needsRehash(array $passwordFields): bool

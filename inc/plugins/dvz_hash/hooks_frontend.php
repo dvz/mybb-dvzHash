@@ -4,38 +4,42 @@ namespace dvzHash;
 
 function create_password(array &$parameters)
 {
-    if (!isset($parameters['user']['dvz_hash_bypass']) || $parameters['user']['dvz_hash_bypass'] !== true) {
-        if (isset($parameters['user']['password_algorithm'])) {
-            if ($parameters['user']['password_algorithm'] == '') {
-                $algorithm = 'mybb';
-            } else {
-                $algorithm = $parameters['user']['password_algorithm'];
-            }
+    if (isset($parameters['user']['password_algorithm'])) {
+        if (in_array($parameters['user']['password_algorithm'], ['', 'mybb'])) {
+            $algorithm = 'mybb';
+        } elseif (\dvzHash\isKnownAlgorithm($parameters['user']['password_algorithm'])) {
+            $algorithm = $parameters['user']['password_algorithm'];
         } else {
             $algorithm = \dvzHash\getPreferredAlgorithm();
         }
-
-        if (\dvzHash\isKnownAlgorithm($algorithm)) {
-            $fields = \dvzHash\hash($algorithm, $parameters['password']);
-
-            if (!isset($fields['salt'])) {
-                $fields['salt'] = \generate_salt();
-            }
-
-            $parameters['fields'] = $fields;
-        }
+    } else {
+        $algorithm = \dvzHash\getPreferredAlgorithm();
     }
+
+    $returnedFields = \dvzHash\hash($algorithm, $parameters['password']);
+
+    $returnedFields = \dvzHash\wrapPasswordFields($returnedFields);
+
+    if (!isset($returnedFields['salt'])) {
+        $returnedFields['salt'] = \generate_salt();
+    }
+
+    $parameters['fields'] = $returnedFields;
 }
 
 function verify_user_password(array &$parameters)
 {
-    if (!isset($parameters['user']['dvz_hash_bypass']) || $parameters['user']['dvz_hash_bypass'] !== true) {
-        if ($parameters['user']['password_algorithm'] == '') {
-            $algorithm = 'mybb';
-        } else {
-            $algorithm = $parameters['user']['password_algorithm'];
-        }
+    if (
+        !isset($parameters['user']['password_algorithm']) ||
+        in_array($parameters['user']['password_algorithm'], ['', 'mybb']) ||
+        !empty($parameters['user']['password_downgraded'])
+    ) {
+        $algorithm = 'mybb';
+    } elseif (\dvzHash\isKnownAlgorithm($parameters['user']['password_algorithm'])) {
+        $algorithm = $parameters['user']['password_algorithm'];
+    }
 
+    if (isset($algorithm)) {
         $parameters['result'] = \dvzHash\verify($algorithm, $parameters['password'], $parameters['user']);
     }
 }

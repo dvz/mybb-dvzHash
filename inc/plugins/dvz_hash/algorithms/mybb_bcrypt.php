@@ -6,9 +6,7 @@ abstract class mybb_bcrypt implements WrappableAlgorithm
 {
     public static function create(string $plaintext): array
     {
-        $passwordFields = \create_password($plaintext, false, [
-            'dvz_hash_bypass' => true,
-        ]);
+        $passwordFields = \dvzHash\Algorithms\mybb::create($plaintext);
 
         $hash = password_hash($passwordFields['password'], PASSWORD_BCRYPT, [
             'cost' => (int)\dvzHash\getSettingValue('bcrypt_cost'),
@@ -21,9 +19,7 @@ abstract class mybb_bcrypt implements WrappableAlgorithm
 
     public static function verify(string $plaintext, array $passwordFields): bool
     {
-        $stringPrehashed = \create_password($plaintext, $passwordFields['salt'], [
-            'dvz_hash_bypass' => true,
-        ]);
+        $stringPrehashed = \dvzHash\Algorithms\mybb::createWithParameters($plaintext, $passwordFields['salt']);
 
         return password_verify($stringPrehashed['password'], $passwordFields['password']);
     }
