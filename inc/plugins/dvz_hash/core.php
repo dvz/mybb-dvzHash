@@ -9,68 +9,34 @@ function hash(string $algorithm, string $plaintext): array
 
     $passwordFields = $class::create($plaintext);
 
-    $passwordFields = \dvzHash\wrapPasswordFields($passwordFields);
-
-    if ($algorithm == 'mybb') {
-        $passwordFields['password_algorithm'] = '';
-    } else {
-        $passwordFields['password_algorithm'] = $algorithm;
-    }
+    $passwordFields['password_algorithm'] = $algorithm;
 
     return $passwordFields;
 }
 
 function verify(string $algorithm, string $plaintext, array $passwordFields): bool
 {
-
-    if (!empty($passwordFields['password_downgraded'])) {
-        $comparePasswordFields = \create_password($plaintext, $passwordFields['salt'], [
-            'dvz_hash_bypass' => true,
-        ]);
-
-        $result = \my_hash_equals($passwordFields['password'], $comparePasswordFields['password']);
-    } elseif (\dvzHash\isKnownAlgorithm($algorithm)) {
-        $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
-
-        $class = '\dvzHash\Algorithms\\' . $algorithm;
-
-        $result = $class::verify($plaintext, $passwordFields);
-    } else {
-        $result = null;
-    }
-
-    return $result;
-}
-
-function needsRehash(string $algorithm, array $passwordFields): bool
-{
     $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
 
     $class = '\dvzHash\Algorithms\\' . $algorithm;
 
-    return $class::needsRehash($passwordFields);
+    return $class::verify($plaintext, $passwordFields);
 }
 
-function wrapAlgorithm(string $toAlgorithm, array $passwordFields): array
+function needsRehash(string $algorithm, array $passwordFields): bool
 {
     if ($passwordFields['password_downgraded']) {
         return false;
     } else {
-        $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
+        $data = $passwordFields;
 
-        $class = '\dvzHash\Algorithms\\' . $toAlgorithm;
-
-        $passwordFields = $class::wrap($passwordFields);
-
-        if ($toAlgorithm == 'mybb') {
-            $passwordFields['password_algorithm'] = '';
-        } else {
-            $passwordFields['password_algorithm'] = $toAlgorithm;
+        if ($passwordFields['password_encryption'] !== '0' && \dvzHash\encryptionKeyAvailable()) {
+            $data['password'] = \dvzHash\decrypt($passwordFields['password'], $passwordFields['password_encryption']);
         }
 
-        $passwordFields = \dvzHash\wrapPasswordFields($passwordFields);
+        $class = '\dvzHash\Algorithms\\' . $algorithm;
 
-        return $passwordFields;
+        return $class::needsRehash($data);
     }
 }
 
@@ -202,7 +168,7 @@ function getKnownAlgorithms(): array
         $filenames = array_filter(
             $filenames,
             function ($filename) use ($algorithmsPath) {
-                return is_file($algorithmsPath . $filename);
+                return is_file($algorithmsPath . $filename) && class_exists('dvzHash\\Algorithms\\' . basename($filename, '.php'));
             }
         );
 

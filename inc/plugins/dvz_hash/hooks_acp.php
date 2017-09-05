@@ -63,7 +63,7 @@ function admin_load()
             $table->construct_header($lang->dvz_hash_admin_algorithm_known, ['width' => '25%', 'class' => 'align_center']);
 
             while ($row = $db->fetch_array($query)) {
-                if ($row['password_algorithm'] === '') {
+                if (in_array($row['password_algorithm'], ['', 'mybb'])) {
                     $name = $lang->dvz_hash_admin_algorithm_default;
                     $wrapCandidateAlgorithms[] = 'mybb';
                 } else {

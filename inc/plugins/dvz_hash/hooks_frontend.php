@@ -90,6 +90,8 @@ function datahandler_login_complete_end(\LoginDataHandler $LoginDataHandler)
             ) {
                 $data = \dvzHash\hash(\dvzHash\getPreferredAlgorithm(), $LoginDataHandler->data['password']);
 
+                $data = \dvzHash\wrapPasswordFields($data);
+
                 $db->update_query('users', $data, 'uid=' . (int)$LoginDataHandler->login_data['uid']);
             }
         }
