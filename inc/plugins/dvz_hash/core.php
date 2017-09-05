@@ -97,16 +97,74 @@ function unwrapPasswordFields(array $passwordFields): array
     return $passwordFields;
 }
 
+function wrapAlgorithm(string $toAlgorithm, array $passwordFields): array
+{
+    if ($passwordFields['password_downgraded']) {
+        return false;
+    } else {
+        $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
+
+        $class = '\dvzHash\Algorithms\\' . $toAlgorithm;
+
+        $passwordFields = $class::wrap($passwordFields);
+
+        $passwordFields['password_algorithm'] = $toAlgorithm;
+
+        $passwordFields = \dvzHash\wrapPasswordFields($passwordFields);
+
+        return $passwordFields;
+    }
+}
+
+function wrapUserPasswordAlgorithm(string $fromAlgorithm, string $toAlgorithm, int $limit = null): bool
+{
+    global $db;
+
+    if (!\dvzHash\algorithmsWrappable($fromAlgorithm, $toAlgorithm)) {
+        return false;
+    }
+
+    if ($fromAlgorithm == 'mybb') {
+        $algorithmIds = [
+            '',
+            'mybb',
+        ];
+    } else {
+        $algorithmIds = [
+            $fromAlgorithm
+        ];
+    }
+
+    if ($limit) {
+        $options = [
+            'limit' => abs((int)$limit),
+        ];
+    } else {
+        $options = [];
+    }
+
+    $algorithmIdsEscaped = array_map(function ($algorithmId) use ($db) {
+        return "'" . $db->escape_string($algorithmId) . "'";
+    }, $algorithmIds);
+
+    $query = $db->simple_select('users', 'uid,password,password_encryption', "password_algorithm IN (" . implode(',', $algorithmIdsEscaped) . ") AND password_downgraded=''", $options);
+
+    while ($row = $db->fetch_array($query)) {
+        $passwordFields = \dvzHash\wrapAlgorithm($toAlgorithm, $row);
+        $db->update_query('users', $passwordFields, 'uid=' . (int)$row['uid']);
+    }
+
+    return true;
+}
+
 function downgradeUserPassword(int $uid, string $plaintext): bool
 {
     global $db;
 
-    $data = \create_password($plaintext, false, [
-        'dvz_hash_bypass' => true,
-    ]);
+    $data = \dvzHash\Algorithms\mybb::create($plaintext);
 
     $db->update_query('users', [
-        'password_downgraded' => 'CONCAT(`password`, \':SALT:\', `salt`)',
+        'password_downgraded' => '`password`',
     ], 'uid=' . (int)$uid, false, true);
 
     if ($db->affected_rows()) {
@@ -122,58 +180,13 @@ function restoreDowngradedUserPassword(int $uid): bool
 {
     global $db;
 
-    if ($user = \get_user($uid)) {
-        $values = explode(':SALT:', $user['password_downgraded']);
+    $db->update_query('users', [
+        'password' => '`password_downgraded`',
+        'salt' => "'" . $db->escape_string(\generate_salt()) . "'",
+        'password_downgraded' => "''",
+    ], 'uid = ' . (int)$uid . " AND password_downgraded != ''", false, true);
 
-        if (isset($values[1])) {
-            $salt = $values[1];
-        } else {
-            $salt = generate_salt();
-        }
-
-        $db->update_query('users', [
-            'password' => $db->escape_string($values[0]),
-            'salt' => $db->escape_string($salt),
-            'password_downgraded' => '',
-        ], 'uid = ' . (int)$uid . " AND password_downgraded != ''");
-
-        return $db->affected_rows() == 1;
-    } else {
-        return false;
-    }
-}
-
-function wrapUserPasswordAlgorithm(string $fromAlgorithm, string $toAlgorithm, int $limit = null): bool
-{
-    global $db;
-
-    if (!\dvzHash\algorithmsWrappable($fromAlgorithm, $toAlgorithm)) {
-        return false;
-    }
-
-    if ($fromAlgorithm == 'mybb') {
-        $algorithmId = '';
-    } else {
-        $algorithmId = $fromAlgorithm;
-    }
-
-    if ($limit) {
-        $options = [
-            'limit' => abs((int)$limit),
-        ];
-    } else {
-        $options = [];
-    }
-
-    $query = $db->simple_select('users', 'uid,password,password_encryption', "password_algorithm='" . $db->escape_string($algorithmId) . "' AND password_downgraded=''", $options);
-
-    while ($row = $db->fetch_array($query)) {
-        $passwordFields = \dvzHash\wrapAlgorithm($toAlgorithm, $row);
-
-        $db->update_query('users', $passwordFields, 'uid=' . (int)$row['uid']);
-    }
-
-    return true;
+    return $db->affected_rows() == 1;
 }
 
 // data
