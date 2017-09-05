@@ -21,9 +21,9 @@ abstract class mybb_argon2i implements WrappableAlgorithm
 
     public static function verify(string $plaintext, array $passwordFields): bool
     {
-        $stringPrehashed = \dvzHash\Algorithms\mybb::createWithParameters($plaintext, $passwordFields['salt']);
+        $prehashedFields = \dvzHash\Algorithms\mybb::createWithParameters($plaintext, $passwordFields['salt']);
 
-        return password_verify($stringPrehashed['password'], $passwordFields['password']);
+        return password_verify($prehashedFields['password'], $passwordFields['password']);
     }
 
     public static function needsRehash(array $passwordFields): bool

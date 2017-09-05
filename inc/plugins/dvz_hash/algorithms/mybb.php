@@ -27,7 +27,7 @@ abstract class mybb implements Algorithm
     {
         $mirrorHash = self::createWithParameters($plaintext, $passwordFields['salt']);
 
-        return \my_hash_equals($passwordFields['password'], $mirrorHash);
+        return \my_hash_equals($passwordFields['password'], $mirrorHash['password']);
     }
 
     public static function needsRehash(array $passwordFields): bool
