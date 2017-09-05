@@ -24,6 +24,10 @@ function create_password(array &$parameters)
         $returnedFields['salt'] = \generate_salt();
     }
 
+    if ($returnedFields['password_algorithm'] == 'mybb') {
+        $returnedFields['password_algorithm'] = '';
+    }
+
     $parameters['fields'] = $returnedFields;
 }
 
@@ -88,9 +92,7 @@ function datahandler_login_complete_end(\LoginDataHandler $LoginDataHandler)
                 $LoginDataHandler->login_data['password_algorithm'] != \dvzHash\getPreferredAlgorithm() ||
                 \dvzHash\needsRehash(\dvzHash\getPreferredAlgorithm(), $LoginDataHandler->login_data)
             ) {
-                $data = \dvzHash\hash(\dvzHash\getPreferredAlgorithm(), $LoginDataHandler->data['password']);
-
-                $data = \dvzHash\wrapPasswordFields($data);
+                $data = \create_password($LoginDataHandler->data['password']);
 
                 $db->update_query('users', $data, 'uid=' . (int)$LoginDataHandler->login_data['uid']);
             }
