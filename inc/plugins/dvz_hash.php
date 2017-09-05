@@ -147,6 +147,27 @@ function dvz_hash_activate()
             'value'       => '12',
         ],
         [
+            'name'        => 'dvz_hash_argon2i_memory_cost',
+            'title'       => 'Default Argon2i memory cost',
+            'description' => 'Choose the default memory usage in kibibytes (2<sup>n</sup>) for the Argon2i algorithm. Higher values provide better security but decrease performance.',
+            'optionscode' => 'numeric',
+            'value'       => '16',
+        ],
+        [
+            'name'        => 'dvz_hash_argon2i_time_cost',
+            'title'       => 'Default Argon2i time cost',
+            'description' => 'Choose the default number of iterations for the Argon2i algorithm. Higher values provide better security but decrease performance.',
+            'optionscode' => 'numeric',
+            'value'       => '4',
+        ],
+        [
+            'name'        => 'dvz_hash_argon2i_threads',
+            'title'       => 'Default Argon2i parallelism',
+            'description' => 'Choose the default number of threads for the Argon2i algorithm.',
+            'optionscode' => 'numeric',
+            'value'       => '1',
+        ],
+        [
             'name'        => 'dvz_hash_encryption',
             'title'       => 'Hash encryption',
             'description' => 'Choose whether generated hashes should be stored encrypted. An encryption key must be available (see plugin documentation).',
