@@ -22,17 +22,17 @@ It is possible to increase the hash strength of existing hashes without providin
 
 #### Algorithm downgrades
 
-The plugin allows administrators to set temporary passwords saved using the MyBB's default algorithm for user accounts, addressing compatibility issues (e.g.to allow them to log in during the upgrade process, where plugins cannot run).
+The plugin allows administrators to set temporary passwords saved using the MyBB's default algorithm for user accounts, addressing compatibility issues (e.g. to allow them to log in during the upgrade process, where plugins cannot run).
 The existing password's value will be moved to `mybb_users.password_downgraded` and the temporary password will be placed in `mybb_users.password`, allowing MyBB to handle the comparison.
 
 ### Encryption
-The hashes passwords can be encrypted to provide an additional layer of protection (effective when encrypted values are obtained by an adversary).
+The hashed passwords can be encrypted to provide an additional layer of protection (effective when values from the database are obtained by an adversary).
 
-The plugin uses keys stored in the MyBB's PHP configuration file or environment variables to encrypt and decrypt password hashes using AES-256 when they are saved and read from the database, respectively. The key IDs associated with passwords are stored in the `mybb_users.password_encryption` field. When the _Hash encryption_ setting is set to _Yes_, the plugin will encrypt hashes using the key with the largest ID number.
+The plugin uses keys stored in the MyBB's PHP configuration file and environment variables to encrypt and decrypt password hashes with AES-256 when they are saved and read from the database, respectively. The key IDs associated with passwords are stored in the `mybb_users.password_encryption` field. When the _Hash encryption_ setting is set to _Yes_, the plugin will encrypt hashes using the key with the largest ID number.
 
 The plugin's tools (Admin CP: ***Tools & Maintenance → DVZ Hash***) allow to add, remove and convert between encryption keys.
 
-To generate an encryption key acquire the [defuse/php-encryption](https://github.com/defuse/php-encryption/releases) library by downloading the `defuse-crypto.phar` package (also included in plugin's repository) and run:
+To generate an encryption key acquire the [defuse/php-encryption](https://github.com/defuse/php-encryption/releases) library by downloading the `defuse-crypto.phar` package (also included in plugin's repository) and run the PHP code in a secure environment:
 ```php
 <?php
 
@@ -43,7 +43,7 @@ $key = Defuse\Crypto\Key::createNewRandomKey();
 echo $key->saveToAsciiSafeString();
 ```
 
-The resulting ASCII representation can be saved in the MyBB configuration file or using environment variables:
+The resulting ASCII representation can be saved in:
 
 - ##### MyBB configuration file
 
@@ -58,7 +58,7 @@ The resulting ASCII representation can be saved in the MyBB configuration file o
 
 - ##### Environment variable
 
-  Add a `dvz_hash_password_encryption_keys` environment variable containing ASCII keys separated by semicolons (`;`) to the server configuration. Content of middle values can be omitted to provide values for keys with higher IDs.
+  Add a `dvz_hash_password_encryption_keys` environment variable containing ASCII keys separated by semicolons (`;`) to the server configuration. Content of some values can be omitted to provide values for keys with higher IDs.
 
   **Apache** servers:
   ```
