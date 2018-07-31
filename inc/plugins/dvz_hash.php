@@ -82,7 +82,7 @@ function dvz_hash_install()
     }
 
     if (!$db->field_exists('password_encryption', 'users')) {
-        $db->add_column('users', 'password_encryption', "smallint(5) NOT NULL DEFAULT 0");
+        $db->add_column('users', 'password_encryption', "smallint NOT NULL DEFAULT 0");
     }
 
     if (!$db->field_exists('password_downgraded', 'users')) {
