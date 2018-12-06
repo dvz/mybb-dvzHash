@@ -6,7 +6,7 @@ View _SECURITY.md_ for a basic advisory on secure usage.
 
 **Requirements:**
 - MyBB >= 1.8.11
-- PHP >= 7.0 (PHP >= 7.2 for _Argon2i_)
+- PHP >= 7.0 (PHP >= 7.2 for _Argon2i_, PHP >= 7.3 for _Argon2id_)
 - [defuse/php-encryption](https://github.com/defuse/php-encryption/) >= 2.0.0 for encryption features (included)
 
 ### Hashing
