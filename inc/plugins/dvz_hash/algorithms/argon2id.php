@@ -2,11 +2,11 @@
 
 namespace dvzHash\Algorithms;
 
-abstract class argon2i implements Algorithm
+abstract class argon2id implements Algorithm
 {
     public static function create(string $plaintext): array
     {
-        $hash = password_hash($plaintext, PASSWORD_ARGON2I, [
+        $hash = password_hash($plaintext, PASSWORD_ARGON2ID, [
             'memory_cost' => 1 << (int)\dvzHash\getSettingValue('argon2_memory_cost'),
             'time_cost' => (int)\dvzHash\getSettingValue('argon2_time_cost'),
             'threads' => (int)\dvzHash\getSettingValue('argon2_threads'),

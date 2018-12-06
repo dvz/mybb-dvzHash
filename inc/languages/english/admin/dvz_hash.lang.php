@@ -75,5 +75,14 @@ $l['setting_dvz_hash_update_on_the_fly_desc'] = 'Choose whether the password alg
 $l['setting_dvz_hash_bcrypt_cost'] = 'Default bcrypt cost';
 $l['setting_dvz_hash_bcrypt_cost_desc'] = 'Choose the default cost for the bcrypt algorithm. Higher values provide better security but decrease performance. Values lower than 12 are not recommended.';
 
+$l['setting_dvz_hash_argon2_memory_cost'] = 'Default Argon2i memory cost';
+$l['setting_dvz_hash_argon2_memory_cost_desc'] = 'Choose the default memory usage in kibibytes (2<sup>n</sup>) for the Argon2i algorithm. Higher values provide better security but decrease performance.';
+
+$l['setting_dvz_hash_argon2_time_cost'] = 'Default Argon2i time cost';
+$l['setting_dvz_hash_argon2_time_cost_desc'] = 'Choose the default number of iterations for the Argon2i algorithm. Higher values provide better security but decrease performance.';
+
+$l['setting_dvz_hash_argon2_threads'] = 'Default Argon2i parallelism';
+$l['setting_dvz_hash_argon2_threads_desc'] = 'Choose the default number of threads for the Argon2i algorithm.';
+
 $l['setting_dvz_hash_encryption'] = 'Hash encryption';
 $l['setting_dvz_hash_encryption_desc'] = 'Choose whether generated hashes should be stored encrypted. An encryption key must be available (see plugin documentation).';
