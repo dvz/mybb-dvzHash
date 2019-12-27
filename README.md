@@ -2,11 +2,14 @@
 
 While this plugin is considered stable, it is highly recommended that only webmasters familiar with principles of password hashing, encryption (if used) and MyBB's architecture & database structure maintain the plugin on live boards.
 
-View _SECURITY.md_ for a basic advisory on secure usage.
+View [`SECURITY.md`](SECURITY.md) for a basic advisory on secure usage.
 
 **Requirements:**
 - MyBB >= 1.8.11
-- PHP >= 7.0 (PHP >= 7.2 for _Argon2i_, PHP >= 7.3 for _Argon2id_)
+- PHP >= 7.0
+  - PHP >= 7.2 for _Argon2i_
+  - PHP >= 7.3 for _Argon2id_
+  - PHP >= 7.4 for the benchmark tool (_Tools & Maintenance → DVZ Hash → Benchmark_)
 - [defuse/php-encryption](https://github.com/defuse/php-encryption/) >= 2.0.0 for encryption features (included)
 
 ### Hashing
@@ -15,7 +18,7 @@ The plugin creates hooks in password-, login-, and user-related functions to tak
 Algorithms can be added by creating a class that implements the `dvzHash\Algorithms\Algorithm` interface in the `inc/plugins/dvz_hash/algorithms/` directory. The plugin needs to be reactivated to update the algorithm list in its settings.
 
 #### On-the-fly rehashing
-Having access to plaintext password values during login, the plugin can change the hashing algorithm according to the current _Preferred algorithm_ setting value in the background.
+Having access to plaintext password values during login, the plugin can change the hashing algorithm according to the current _Preferred Algorithm_ setting value in the background.
 
 #### Algorithm wrapping
 It is possible to increase the hash strength of existing hashes without providing plaintext values. The plugin includes `mybb_*` algorithms that create and verify passwords using both the MyBB's default algorithm and additional ones on top.
