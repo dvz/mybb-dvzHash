@@ -127,15 +127,15 @@ function dvz_hash_activate()
     $settings = [
         [
             'name'        => 'dvz_hash_preferred_algorithm',
-            'title'       => 'Preferred algorithm',
-            'description' => 'Select an algorithm which password hashes should be kept in.',
-            'optionscode' => 'select' . PHP_EOL . dvzHash\getAlgorithmSelectString(),
+            'title'       => 'Preferred Algorithm',
+            'description' => 'Select the algorithm that will be used for new passwords.',
+            'optionscode' => 'select' . PHP_EOL . dvzHash\getAlgorithmSelectString(false),
             'value'       => 'mybb',
         ],
         [
             'name'        => 'dvz_hash_update_on_the_fly',
-            'title'       => 'Update on the fly',
-            'description' => 'Choose whether the password algorithm should be updated once the raw password is provided.',
+            'title'       => 'Update on the Fly',
+            'description' => 'Choose whether the password algorithm should be changed to the preferred one when raw passwords are provided.',
             'optionscode' => 'yesno',
             'value'       => '0',
         ],
@@ -143,34 +143,39 @@ function dvz_hash_activate()
             'name'        => 'dvz_hash_bcrypt_cost',
             'title'       => 'Default bcrypt cost',
             'description' => 'Choose the default cost for the bcrypt algorithm. Higher values provide better security but decrease performance. Values lower than 12 are not recommended.',
-            'optionscode' => 'numeric',
+            'optionscode' => 'numeric
+min=4
+max=31',
             'value'       => '12',
         ],
         [
             'name'        => 'dvz_hash_argon2_memory_cost',
             'title'       => 'Default Argon2 memory cost',
             'description' => 'Choose the default memory usage in kibibytes (2<sup>n</sup>) for Argon2 algorithms. Higher values provide better security but decrease performance.',
-            'optionscode' => 'numeric',
+            'optionscode' => 'numeric
+min=3',
             'value'       => '16',
         ],
         [
             'name'        => 'dvz_hash_argon2_time_cost',
             'title'       => 'Default Argon2 time cost',
             'description' => 'Choose the default number of iterations for Argon2 algorithms. Higher values provide better security but decrease performance.',
-            'optionscode' => 'numeric',
+            'optionscode' => 'numeric
+min=1',
             'value'       => '4',
         ],
         [
             'name'        => 'dvz_hash_argon2_threads',
             'title'       => 'Default Argon2 parallelism',
             'description' => 'Choose the default number of threads for Argon2 algorithms.',
-            'optionscode' => 'numeric',
+            'optionscode' => 'numeric
+min=1',
             'value'       => '1',
         ],
         [
             'name'        => 'dvz_hash_encryption',
-            'title'       => 'Hash encryption',
-            'description' => 'Choose whether generated hashes should be stored encrypted. An encryption key must be available (see plugin documentation).',
+            'title'       => 'Hash Encryption',
+            'description' => 'Choose whether generated hashes should be stored encrypted. An encryption key must be available (see plugin documentation for details).',
             'optionscode' => 'yesno',
             'value'       => '0',
         ],

@@ -156,7 +156,7 @@ function restoreDowngradedUserPassword(int $uid): bool
 }
 
 // data
-function getKnownAlgorithms(): array
+function getKnownAlgorithms(bool $includeWrappable = true): array
 {
     static $algorithms = null;
 
@@ -167,8 +167,13 @@ function getKnownAlgorithms(): array
 
         $filenames = array_filter(
             $filenames,
-            function ($filename) use ($algorithmsPath) {
-                return is_file($algorithmsPath . $filename) && class_exists('dvzHash\\Algorithms\\' . basename($filename, '.php'));
+            function ($filename) use ($algorithmsPath, $includeWrappable) {
+                $className = 'dvzHash\\Algorithms\\' . basename($filename, '.php');
+
+                return is_file($algorithmsPath . $filename) && class_exists($className) && (
+                    $includeWrappable ||
+                    !is_subclass_of($className, '\\dvzHash\\Algorithms\\WrappableAlgorithm')
+                );
             }
         );
 
@@ -183,9 +188,9 @@ function isKnownAlgorithm(string $algorithm): bool
     return in_array($algorithm, \dvzHash\getKnownAlgorithms());
 }
 
-function getAlgorithmSelectString(): string
+function getAlgorithmSelectString(bool $includeWrappable = true): string
 {
-    $algorithms = \dvzHash\getKnownAlgorithms();
+    $algorithms = \dvzHash\getKnownAlgorithms($includeWrappable);
 
     array_walk($algorithms, function (&$value) {
         $value = $value . '=' . $value;
