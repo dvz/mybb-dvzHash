@@ -226,9 +226,83 @@ function algorithmsWrappable(string $fromAlgorithm, string $toAlgorithm): bool
     ;
 }
 
+function getAlgorithmSmokeTestResults(): array
+{
+    $results = [];
+
+    $algorithms = [
+        'bcrypt' => [
+            'testStringHash' => '$2y$04$J36x46Cyl6ZVZ5QgPrlVJ./K5UhiOozM8RYluTlZ/QujFYD/eBNTa',
+            'randomStringOptions' => [
+                'cost' => 4,
+            ],
+        ],
+        'argon2id' => [
+            'testStringHash' => '$argon2id$v=19$m=8,t=1,p=1$bXliYi5jb20$DlL1Gw',
+            'randomStringOptions' => [
+                'threads' => 1,
+                'memory_cost' => 8,
+                'time_cost' => 1,
+            ],
+        ],
+    ];
+
+    $testString = 'free never tasted so good';
+    $randomString = \random_str();
+
+    foreach ($algorithms as $algorithmName => $algorithm) {
+        if (defined('PASSWORD_' . strtoupper($algorithmName))) {
+            $result = password_get_info($algorithm['testStringHash'])['algoName'] === $algorithmName;
+            $result &= password_verify($testString, $algorithm['testStringHash']);
+            $result &= password_verify(
+                $randomString,
+                password_hash($randomString, PASSWORD_BCRYPT, $algorithm['randomStringOptions'])
+            );
+
+            $results[$algorithmName] = $result;
+        }
+    }
+
+    return $results;
+}
+
 // common
 function getSettingValue(string $name): string
 {
     global $mybb;
     return $mybb->settings['dvz_hash_' . $name];
+}
+
+function getRenderedGraph(array $data, array $options = []): \Graph
+{
+    require_once MYBB_ROOT.'inc/class_graph.php';
+
+    if (isset($options['image_width']) || isset($options['graph_width'])) {
+        $graph = (new \ReflectionClass('Graph'))->newInstanceWithoutConstructor();
+
+        if (isset($options['image_width'])) {
+            $graph->img_width = $options['image_width'];
+        }
+
+        if (isset($options['graph_width'])) {
+            $graph->inside_width = $options['graph_width'];
+        }
+
+        $graph->__construct();
+    } else {
+        $graph = new \Graph();
+    }
+
+    $graph->add_points($data);
+    $graph->add_x_labels(
+        array_keys($data)
+    );
+
+    if (isset($options['label'])) {
+        $graph->set_bottom_label($options['label']);
+    }
+
+    $graph->render();
+
+    return $graph;
 }
