@@ -2,46 +2,25 @@
 
 namespace dvzHash\Algorithms;
 
-abstract class mybb_bcrypt implements WrappableAlgorithm
+abstract class mybb_bcrypt extends bcrypt implements WrappableAlgorithm
 {
     public static function create(string $plaintext): array
     {
-        $passwordFields = \dvzHash\Algorithms\mybb::create($plaintext);
+        $passwordFieldsPrehashed = \dvzHash\Algorithms\mybb::create($plaintext);
+        $passwordFields = \dvzHash\Algorithms\bcrypt::create($passwordFieldsPrehashed['password']);
 
-        $hash = password_hash($passwordFields['password'], PASSWORD_BCRYPT, [
-            'cost' => (int)\dvzHash\getSettingValue('bcrypt_cost'),
-        ]);
-
-        return array_merge($passwordFields, [
-            'password' => $hash,
-        ]);
+        return array_merge($passwordFieldsPrehashed, $passwordFields);
     }
 
     public static function verify(string $plaintext, array $passwordFields): bool
     {
-        $prehashedFields = \dvzHash\Algorithms\mybb::createWithParameters($plaintext, $passwordFields['salt']);
+        $passwordFieldsPrehashed = \dvzHash\Algorithms\mybb::createWithParameters($plaintext, $passwordFields['salt']);
 
-        return password_verify($prehashedFields['password'], $passwordFields['password']);
-    }
-
-    public static function needsRehash(array $passwordFields): bool
-    {
-        $passwordInfo = password_get_info($passwordFields['password']);
-
-        return (
-            !isset($passwordInfo['options']['cost']) ||
-            $passwordInfo['options']['cost'] < (int)\dvzHash\getSettingValue('bcrypt_cost')
-        );
+        return \dvzHash\Algorithms\bcrypt::verify($passwordFieldsPrehashed['password'], $passwordFields);
     }
 
     public static function wrap(array $passwordFields): array
     {
-        $hash = password_hash($passwordFields['password'], PASSWORD_BCRYPT, [
-            'cost' => (int)\dvzHash\getSettingValue('bcrypt_cost'),
-        ]);
-
-        return [
-            'password' => $hash,
-        ];
+        return \dvzHash\Algorithms\bcrypt::create($passwordFields['password']);
     }
 }

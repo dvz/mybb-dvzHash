@@ -26,7 +26,7 @@ abstract class bcrypt implements Algorithm
 
         return (
             !isset($passwordInfo['options']['cost']) ||
-            $passwordInfo['options']['cost'] < (int)\dvzHash\getSettingValue('bcrypt_cost')
+            $passwordInfo['options']['cost'] != (int)\dvzHash\getSettingValue('bcrypt_cost')
         );
     }
 }

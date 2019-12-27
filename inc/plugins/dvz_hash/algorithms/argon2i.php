@@ -30,9 +30,9 @@ abstract class argon2i implements Algorithm
             !isset($passwordInfo['options']['memory_cost']) ||
             !isset($passwordInfo['options']['time_cost']) ||
             !isset($passwordInfo['options']['threads']) ||
-            $passwordInfo['options']['memory_cost'] < (int)\dvzHash\getSettingValue('argon2_memory_cost') ||
-            $passwordInfo['options']['time_cost'] < (int)\dvzHash\getSettingValue('argon2_time_cost') ||
-            $passwordInfo['options']['threads'] < (int)\dvzHash\getSettingValue('argon2_threads')
+            $passwordInfo['options']['memory_cost'] != 1 << (int)\dvzHash\getSettingValue('argon2_memory_cost') ||
+            $passwordInfo['options']['time_cost'] != (int)\dvzHash\getSettingValue('argon2_time_cost') ||
+            $passwordInfo['options']['threads'] != (int)\dvzHash\getSettingValue('argon2_threads')
         );
     }
 }
