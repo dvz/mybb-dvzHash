@@ -242,7 +242,7 @@ function admin_load()
             if ($mybb->get_input('restore') && \verify_post_check($mybb->get_input('my_post_key'))) {
                 $user = get_user($mybb->get_input('restore', \MyBB::INPUT_INT));
 
-                if ($user && $user['password_downgraded']) {
+                if ($user && !empty($user['password_downgraded'])) {
                     if (\is_super_admin($mybb->user['uid']) || !\is_super_admin($user['uid'])) {
                         if (\dvzHash\restoreDowngradedUserPassword($user['uid'])) {
                             \flash_message($lang->dvz_hash_admin_downgrade_restored, 'success');
@@ -265,7 +265,7 @@ function admin_load()
                     ]);
 
                     if ($user) {
-                        if (!$user['password_downgraded'] && !in_array($user['password_algorithm'], ['', 'mybb'])) {
+                        if (empty($user['password_downgraded']) && !in_array($user['password_algorithm'], ['', 'mybb'])) {
                             if (\is_super_admin($mybb->user['uid']) || !\is_super_admin($user['uid'])) {
                                 if (\dvzHash\downgradeUserPassword($user['uid'], $mybb->get_input('password'))) {
                                     \flash_message($lang->dvz_hash_admin_downgrade_added, 'success');

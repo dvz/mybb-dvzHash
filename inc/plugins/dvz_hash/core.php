@@ -25,12 +25,12 @@ function verify(string $algorithm, string $plaintext, array $passwordFields): bo
 
 function needsRehash(string $algorithm, array $passwordFields): bool
 {
-    if ($passwordFields['password_downgraded']) {
+    if (!empty($passwordFields['password_downgraded'])) {
         return false;
     } else {
         $data = $passwordFields;
 
-        if ($passwordFields['password_encryption'] !== '0' && \dvzHash\encryptionKeyAvailable()) {
+        if ($passwordFields['password_encryption'] != '0' && \dvzHash\encryptionKeyAvailable()) {
             $data['password'] = \dvzHash\decrypt($passwordFields['password'], $passwordFields['password_encryption']);
         }
 
@@ -56,7 +56,7 @@ function wrapPasswordFields(array $passwordFields): array
 
 function unwrapPasswordFields(array $passwordFields): array
 {
-    if ($passwordFields['password_encryption'] !== '0' && \dvzHash\encryptionKeyAvailable() && !$passwordFields['password_downgraded']) {
+    if ($passwordFields['password_encryption'] != '0' && \dvzHash\encryptionKeyAvailable() && empty($passwordFields['password_downgraded'])) {
         $passwordFields['password'] = \dvzHash\decrypt($passwordFields['password'], $passwordFields['password_encryption']);
     }
 
@@ -65,7 +65,7 @@ function unwrapPasswordFields(array $passwordFields): array
 
 function wrapAlgorithm(string $toAlgorithm, array $passwordFields): array
 {
-    if ($passwordFields['password_downgraded']) {
+    if (!empty($passwordFields['password_downgraded'])) {
         return false;
     } else {
         $passwordFields = \dvzHash\unwrapPasswordFields($passwordFields);
@@ -129,9 +129,15 @@ function downgradeUserPassword(int $uid, string $plaintext): bool
 
     $data = \dvzHash\Algorithms\mybb::create($plaintext);
 
-    $db->update_query('users', [
-        'password_downgraded' => '`password`',
-    ], 'uid=' . (int)$uid, false, true);
+    if ($db->type == 'pgsql' || $db->type == 'sqlite') {
+        $db->update_query('users', [
+            'password_downgraded' => '"password"',
+        ], 'uid=' . (int)$uid, false, true);
+    } else {
+        $db->update_query('users', [
+            'password_downgraded' => '`password`',
+        ], 'uid=' . (int)$uid, false, true);
+    }
 
     if ($db->affected_rows()) {
         $db->update_query('users', $data, 'uid=' . (int)$uid);
@@ -146,11 +152,19 @@ function restoreDowngradedUserPassword(int $uid): bool
 {
     global $db;
 
-    $db->update_query('users', [
-        'password' => '`password_downgraded`',
-        'salt' => "'" . $db->escape_string(\generate_salt()) . "'",
-        'password_downgraded' => "''",
-    ], 'uid = ' . (int)$uid . " AND password_downgraded != ''", false, true);
+    if ($db->type == 'pgsql' || $db->type == 'sqlite') {
+        $db->update_query('users', [
+            'password' => '"password_downgraded"',
+            'salt' => "'" . $db->escape_string(\generate_salt()) . "'",
+            'password_downgraded' => "''",
+        ], 'uid = ' . (int)$uid . " AND password_downgraded != ''", false, true);
+    } else {
+        $db->update_query('users', [
+            'password' => '`password_downgraded`',
+            'salt' => "'" . $db->escape_string(\generate_salt()) . "'",
+            'password_downgraded' => "''",
+        ], 'uid = ' . (int)$uid . " AND password_downgraded != ''", false, true);
+    }
 
     return $db->affected_rows() == 1;
 }

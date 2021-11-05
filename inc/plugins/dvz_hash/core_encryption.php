@@ -54,7 +54,7 @@ function convertUserPasswordEncryption(int $fromKey, int $toKey, int $limit = nu
     $query = $db->simple_select('users', 'uid,password,password_encryption', 'password_encryption = ' . (int)$fromKey, $options);
 
     while ($row = $db->fetch_array($query)) {
-        if ($row['password_encryption'] === '0') {
+        if ($row['password_encryption'] == '0') {
             $rawValue = $row['password'];
         } else {
             $rawValue = \dvzHash\decrypt($row['password'], $row['password_encryption']);
