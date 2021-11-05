@@ -265,12 +265,14 @@ function getAlgorithmSmokeTestResults(): array
     $randomString = \random_str();
 
     foreach ($algorithms as $algorithmName => $algorithm) {
-        if (defined('PASSWORD_' . strtoupper($algorithmName))) {
+        $constantName = 'PASSWORD_' . strtoupper($algorithmName);
+
+        if (defined($constantName)) {
             $result = password_get_info($algorithm['testStringHash'])['algoName'] === $algorithmName;
             $result &= password_verify($testString, $algorithm['testStringHash']);
             $result &= password_verify(
                 $randomString,
-                password_hash($randomString, PASSWORD_BCRYPT, $algorithm['randomStringOptions'])
+                password_hash($randomString, constant($constantName), $algorithm['randomStringOptions'])
             );
 
             $results[$algorithmName] = $result;
