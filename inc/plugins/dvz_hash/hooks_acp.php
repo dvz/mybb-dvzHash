@@ -800,7 +800,7 @@ initSelection: function(element, callback) {
                 $lang->dvz_hash_admin_time_limit,
                 $lang->dvz_hash_admin_time_limit_description,
                 $form->generate_numeric_field('time_limit', ini_get('max_execution_time') ?? 30, [
-                    'min' => 1,
+                    'min' => 0,
                     'max' => 86400,
                 ])
             );
