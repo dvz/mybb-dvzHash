@@ -191,7 +191,7 @@ function getKnownAlgorithms(bool $includeWrappable = true): array
             }
         );
 
-        $algorithms = str_replace('.php', null, $filenames);
+        $algorithms = str_replace('.php', '', $filenames);
     }
 
     return $algorithms;
